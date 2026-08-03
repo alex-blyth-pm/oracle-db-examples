@@ -19,8 +19,13 @@ These labs assume the following environment:
 - Oracle Managed Files (OMF)
 - SQLcl (recommended) or SQL*Plus
 - SYSDBA privileges
+- Two separately named, open CDBs: a source CDB for setup and Labs 01-02, and
+  a target CDB reserved for Lab 03 cross-CDB cloning
+- Oracle Net connectivity from the database-server VMs in each CDB to the peer
+  CDB's SCAN service
 
-Unless otherwise stated, all commands are executed from `CDB$ROOT`.
+Unless otherwise stated, commands are executed from `CDB$ROOT` in the source
+CDB. Lab 03 explicitly identifies source- and target-CDB steps.
 
 ## Repository Layout
 
@@ -88,3 +93,8 @@ This repository accompanies the following blog series:
 3. PDB Thin Clones: Fast Copies for Development and Test (upcoming)
 4. PDB Snapshot Carousels (upcoming)
 5. Cloning Between CDBs (upcoming)
+
+## Publishing a Public Snapshot
+
+Maintainers can publish a tagged, reviewable snapshot of these labs to the
+public examples repository. See [Publishing a Public Snapshot](docs/publishing.md).

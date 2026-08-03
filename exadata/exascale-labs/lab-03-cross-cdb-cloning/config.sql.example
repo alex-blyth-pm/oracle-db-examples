@@ -1,0 +1,17 @@
+SET ECHO OFF
+
+-- Copy this file to config.sql and replace every placeholder before running
+-- Lab 03. Keep config.sql local because its database link may contain
+-- environment-specific connection details.
+
+DEFINE LAB03_SOURCE_CDB       = SOURCE_CDB
+DEFINE LAB03_TARGET_CDB       = TARGET_CDB
+DEFINE LAB03_SOURCE_DB_LINK   = SOURCE_CDB_LINK
+-- Use a common user name. C## is the default common-user prefix.
+DEFINE LAB03_SOURCE_LINK_USER = C##LAB03_LINK
+DEFINE LAB03_SOURCE_LINK_PASSWORD = change_me
+-- Use the source CDB SCAN service, not an individual RAC instance address.
+DEFINE LAB03_SOURCE_CONNECT_IDENTIFIER = source_cdb_scan_service
+DEFINE LAB03_SNAPSHOT_NAME    = SALES_CROSS_CDB_SNAP
+DEFINE LAB03_TARGET_PDB       = CI_PIPELINE
+DEFINE LAB03_DIRECT_TARGET_PDB = CI_PIPELINE_DIRECT

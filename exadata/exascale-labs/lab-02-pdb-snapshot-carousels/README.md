@@ -28,6 +28,8 @@ newest snapshot once the carousel has produced one.
 - SQLcl or SQL*Plus
 - SYSDBA or equivalent privileges
 - `SALES_MAIN` exists and is open
+- A separate target CDB is available for Lab 03. Lab 02 operates only in the
+  source CDB.
 
 Run setup first if required:
 
@@ -48,7 +50,9 @@ Lab 01 does not need to be left in place, but the common setup PDB must exist.
 | `02-verify-snapshot-carousel.sql` | Reports carousel mode, interval, maximum snapshots, and current snapshot metadata |
 | `03-capture-post-refresh-snapshot.sql` | Captures a manually named, precise point after an in-place `SALES_MAIN` refresh |
 | `03-create-qa-from-latest-snapshot.sql` | Creates `QA` from the newest available snapshot after one exists |
+| `03-verify-qa.sql` | Verifies QA availability and service placement after Clusterware starts it |
 | `04-cleanup.sql` | Drops `QA` and the named post-refresh snapshot, disables the automated carousel, and reports remaining interval snapshots |
+| `99-reset-lab.sh` | Removes the QA Clusterware resource and runs cleanup non-interactively |
 
 ## Run-Through
 
@@ -63,7 +67,8 @@ The runner uses Oracle SQLcl when available and SQL*Plus as the fallback. Set
 first reports the connected CDB, container, and database version, then validates
 that `SALES_MAIN` exists before cleanup or lab execution. It does not run
 `03-create-qa-from-latest-snapshot.sql` because the database may not create the
-first interval snapshot immediately.
+first interval snapshot immediately. It uses
+`../common/manage-pdb-clusterware.sh` for PDB resources and services.
 
 ## Walkthrough
 
@@ -79,10 +84,32 @@ Verify carousel mode and snapshot metadata:
 @02-verify-snapshot-carousel.sql
 ```
 
-After the database has created a carousel snapshot, create the QA clone:
+After the database has created a carousel snapshot, first remove any prior QA
+clone from Clusterware management. This stops its PDB service, closes the PDB
+through its Clusterware resource, and removes both resources so the SQL can
+safely drop and recreate `QA`. The command is idempotent: it reports and skips
+resources that are already absent.
+
+```bash
+../common/manage-pdb-clusterware.sh stop-and-remove QA
+```
+
+Create the QA clone from the newest snapshot:
 
 ```sql
 @03-create-qa-from-latest-snapshot.sql
+```
+
+Create and start its Clusterware PDB resource and service:
+
+```bash
+../common/manage-pdb-clusterware.sh ensure-and-start QA
+```
+
+Verify QA availability, service placement, and snapshot state:
+
+```sql
+@03-verify-qa.sql
 ```
 
 If the source must be captured immediately after an in-place refresh, rather
@@ -92,10 +119,19 @@ than at the next carousel interval, use a separate manual snapshot:
 @03-capture-post-refresh-snapshot.sql
 ```
 
-Clean up the lab:
+Clean up the lab manually:
 
 ```sql
 @04-cleanup.sql
+```
+
+Before cleanup, run `../common/manage-pdb-clusterware.sh stop-and-remove QA`.
+
+For the supported non-interactive reset, which performs that Clusterware step
+automatically, run:
+
+```bash
+./99-reset-lab.sh
 ```
 
 Cleanup runs without interactive pauses. It drops the named precise
@@ -121,6 +157,6 @@ database-managed interval snapshots that already exist.
   row by creation trigger, so keep the precise snapshot name distinct.
 - `QA` is created as a thin clone with
   `CREATE PLUGGABLE DATABASE ... USING SNAPSHOT ... SNAPSHOT COPY`.
-- Clone PDBs are opened with `INSTANCES = ALL` for RAC.
+- Clusterware PDB resources and PDB services control clone availability and RAC placement.
 - Oracle Managed Files is assumed, so no `FILE_NAME_CONVERT` clause is used.
 - Project-level follow-up items are tracked in `../docs/todo.md`.

@@ -85,9 +85,7 @@ SELECT 'DEV_CLONE_2', '&&DEV_CLONE_2' FROM dual
 UNION ALL
 SELECT 'DEV_CLONE_CHILD', '&&DEV_CLONE_CHILD' FROM dual
 UNION ALL
-SELECT 'QA_PDB', '&&QA_PDB' FROM dual
-UNION ALL
-SELECT 'CI_PDB', '&&CI_PDB' FROM dual;
+SELECT 'QA_PDB', '&&QA_PDB' FROM dual;
 
 PROMPT Oracle RAC instances
 
@@ -168,8 +166,6 @@ FROM   (
            SELECT '&&DEV_CLONE_CHILD' FROM dual
            UNION ALL
            SELECT '&&QA_PDB' FROM dual
-           UNION ALL
-           SELECT '&&CI_PDB' FROM dual
        ) e
        LEFT JOIN dba_pdbs p
          ON p.pdb_name = e.expected_pdb
@@ -216,8 +212,7 @@ WITH checks AS (
             WHERE  pdb_name IN ('&&DEV_CLONE_1',
                                 '&&DEV_CLONE_2',
                                 '&&DEV_CLONE_CHILD',
-                                '&&QA_PDB',
-                                '&&CI_PDB')) AS clone_count
+                                '&&QA_PDB')) AS clone_count
     FROM   dual
 )
 SELECT CASE

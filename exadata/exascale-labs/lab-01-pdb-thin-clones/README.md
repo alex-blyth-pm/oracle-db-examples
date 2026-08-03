@@ -27,6 +27,8 @@ flowchart TD
 - SQLcl or SQL*Plus
 - SYSDBA or equivalent privileges
 - `SALES_MAIN` exists and is open
+- A separate target CDB is available for Lab 03. Lab 01 operates only in the
+  source CDB.
 - Passwordless SSH equivalence from the central database server to the database servers as `root`, and to the storage servers as `celladmin` (the default) or `root`. This is required by `../setup/03-verify-exadata-software.sh`.
 
 Run setup first if required:
@@ -53,10 +55,14 @@ To use `root` for the storage-server checks instead of the default `celladmin`, 
 | `01-create-snapshot.sql` | Creates the explicit `SALES_WEEKLY_SNAP` PDB snapshot from `SALES_MAIN` |
 | `02-create-consistent-snapshot.sql` | Creates `SALES_CONSISTENT_SNAP` with the `CONSISTENT` snapshot variation |
 | `03-create-clones.sql` | Creates snapshot-copy clones `DEV_ALEX` and `DEV_SARAH` from `SALES_MAIN` using `SALES_WEEKLY_SNAP` |
+| `03-verify-clones.sql` | Verifies developer clone availability and service placement after Clusterware starts them |
 | `04-verify-independence.sql` | Writes clone-local marker rows and verifies clone independence |
-| `05-create-clone-of-clone.sql` | Creates `DEV_JORDAN` as a snapshot-copy clone of `DEV_SARAH`, then drops `DEV_SARAH` to prove independence |
-| `06-refresh-clone.sql` | Refreshes `DEV_ALEX` by dropping and recreating it from `SALES_WEEKLY_SNAP`, then verifies that clone-local marker data was reset |
+| `05-create-clone-of-clone.sql` | Creates `DEV_JORDAN` as a snapshot-copy clone of `DEV_SARAH` |
+| `05-drop-source-clone.sql` | Drops `DEV_SARAH` after its Clusterware resource is removed and verifies `DEV_JORDAN` remains usable |
+| `06-refresh-clone.sql` | Refreshes `DEV_ALEX` by dropping and recreating it from `SALES_WEEKLY_SNAP` |
+| `06-verify-refresh.sql` | Verifies refreshed clone availability and that clone-local marker data was reset |
 | `07-cleanup.sql` | Drops the lab clones and named PDB snapshots |
+| `99-reset-lab.sh` | Removes Lab 01 Clusterware resources and runs cleanup non-interactively |
 
 ## Run-Through
 
@@ -68,6 +74,7 @@ To prepare the completed Lab 01 state for inspection, run:
 
 The runner uses SQLcl when available and SQL*Plus as the fallback. Set `LAB_DB_CONNECT` to override the default `/ as sysdba` connection string.
 It validates that `SALES_MAIN` exists before cleanup or lab execution.
+It also uses `../common/manage-pdb-clusterware.sh` to manage PDB resources and services.
 
 ## Walkthrough
 
@@ -89,6 +96,16 @@ Create the developer clones:
 @03-create-clones.sql
 ```
 
+Then create and start their Clusterware resources and PDB services:
+
+```bash
+../common/manage-pdb-clusterware.sh ensure-and-start DEV_ALEX,DEV_SARAH
+```
+
+```sql
+@03-verify-clones.sql
+```
+
 Verify that the clones are independent:
 
 ```sql
@@ -101,20 +118,59 @@ Create a hierarchical clone from one developer clone, then drop the source clone
 @05-create-clone-of-clone.sql
 ```
 
+```bash
+../common/manage-pdb-clusterware.sh ensure-and-start DEV_JORDAN
+../common/manage-pdb-clusterware.sh stop-and-remove DEV_SARAH
+```
+
+```sql
+@05-drop-source-clone.sql
+```
+
 Refresh one clone from the weekly snapshot:
+
+First, remove `DEV_ALEX` from Clusterware management. This stops its PDB
+service, closes the PDB through its Clusterware resource, and removes both
+resources so the refresh SQL can safely drop and recreate the PDB. The command
+is idempotent: it reports and skips resources that are already absent.
+
+```bash
+../common/manage-pdb-clusterware.sh stop-and-remove DEV_ALEX
+```
+
+Recreate the clone from `SALES_WEEKLY_SNAP`:
 
 ```sql
 @06-refresh-clone.sql
+```
+
+Restore its Clusterware resource and service, then verify the refreshed state:
+
+```bash
+../common/manage-pdb-clusterware.sh ensure-and-start DEV_ALEX
+```
+
+```sql
+@06-verify-refresh.sql
 ```
 
 The refresh verification reports `PASS` when the clone-local marker table is
 absent, or when the prior `DEV_ALEX` marker row is absent if that table is part
 of the snapshot baseline.
 
-Clean up the lab:
+Clean up the lab manually:
 
 ```sql
 @07-cleanup.sql
+```
+
+Before cleanup, run `../common/manage-pdb-clusterware.sh stop-and-remove DEV_JORDAN,DEV_SARAH,DEV_ALEX`.
+
+For the supported non-interactive reset, which performs that Clusterware step
+automatically, run:
+
+```bash
+./99-reset-lab.sh
 ```
 
 Cleanup runs without interactive pauses.
@@ -140,7 +196,7 @@ For a detailed explanation, see [Exascale Snapshots and Clones: Core Concepts](h
 - The lab also creates a consistent snapshot with `ALTER PLUGGABLE DATABASE SNAPSHOT ... CONSISTENT`.
 - Clones are created as thin clones from the reusable snapshot with `CREATE PLUGGABLE DATABASE ... USING SNAPSHOT ... SNAPSHOT COPY`.
 - A clone can also be used as the source for another thin clone with `CREATE PLUGGABLE DATABASE ... FROM source_clone SNAPSHOT COPY`.
-- Clone PDBs are opened with `INSTANCES = ALL` for RAC.
+- Clusterware PDB resources and PDB services control clone availability and RAC placement.
 - Oracle Managed Files is assumed, so no `FILE_NAME_CONVERT` clause is used.
 - Project-level follow-up items are tracked in `../docs/todo.md`.
 
