@@ -128,22 +128,22 @@ echo "Connect: $sql_connect"
 run_sql .preflight.sql
 run_clusterware ensure-and-start "SALES_MAIN"
 run_clusterware stop-and-remove "DEV_JORDAN,DEV_SARAH,DEV_ALEX"
-run_sql 07-cleanup.sql
+run_sql 10-cleanup.sql
 run_sql 01-create-snapshot.sql
 run_sql 02-create-consistent-snapshot.sql
 run_sql 03-create-clones.sql
 run_clusterware ensure-and-start "DEV_ALEX,DEV_SARAH"
-run_sql 03-verify-clones.sql
-run_sql 04-verify-independence.sql
+run_sql 04-verify-clones.sql
+run_sql 05-verify-independence.sql
 run_clusterware stop-and-remove "DEV_JORDAN"
-run_sql 05-create-clone-of-clone.sql
+run_sql 06-create-clone-of-clone.sql
 run_clusterware ensure-and-start "DEV_JORDAN"
 run_clusterware stop-and-remove "DEV_SARAH"
-run_sql 05-drop-source-clone.sql
+run_sql 07-drop-source-clone.sql
 run_clusterware stop-and-remove "DEV_ALEX"
-run_sql 06-refresh-clone.sql
+run_sql 08-refresh-clone.sql
 run_clusterware ensure-and-start "DEV_ALEX"
-run_sql 06-verify-refresh.sql
+run_sql 09-verify-refresh.sql
 run_clusterware verify "DEV_JORDAN,DEV_ALEX"
 
 echo

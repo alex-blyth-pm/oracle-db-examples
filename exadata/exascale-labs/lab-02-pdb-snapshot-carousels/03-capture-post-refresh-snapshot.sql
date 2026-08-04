@@ -54,7 +54,7 @@ BEGIN
 END;
 /
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to capture the precise post-refresh snapshot."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to capture the precise post-refresh snapshot.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT SQL/DDL:

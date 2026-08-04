@@ -139,7 +139,7 @@ run_sql .connectivity.sql
 run_sql .preflight.sql
 run_clusterware ensure-and-start "SALES_MAIN"
 run_clusterware stop-and-remove "QA"
-run_sql 04-cleanup.sql
+run_sql 06-cleanup.sql
 run_sql 01-enable-snapshot-carousel.sql
 run_sql 02-verify-snapshot-carousel.sql
 run_clusterware verify "SALES_MAIN"

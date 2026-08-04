@@ -8,9 +8,15 @@ This repository accompanies the Exadata Exascale snapshots and clones blog serie
 
 Each lab uses the common setup environment while progressing from PDB thin cloning through operational workflows such as snapshot carousels and cross-CDB cloning.
 
+Start with [Prepare Your Environment](docs/environment-setup.md) to validate
+the database topology, RAC and Clusterware access, Exascale software level,
+storage capacity, and Lab 03 network requirements before running setup.
+
 ## Target Environment
 
-These labs assume the following environment:
+These labs assume the following environment. For the full preparation steps,
+including commands to discover CDB and RAC values, see
+[Prepare Your Environment](docs/environment-setup.md).
 
 - Oracle AI Database 26ai
 - Exadata Exascale
@@ -18,6 +24,7 @@ These labs assume the following environment:
 - Oracle RAC (2 or more instances)
 - Oracle Managed Files (OMF)
 - SQLcl (recommended) or SQL*Plus
+- gDBClone 5.0.2.2 or later for CDB thin-clone labs
 - SYSDBA privileges
 - Two separately named, open CDBs: a source CDB for setup and Labs 01-02, and
   a target CDB reserved for Lab 03 cross-CDB cloning

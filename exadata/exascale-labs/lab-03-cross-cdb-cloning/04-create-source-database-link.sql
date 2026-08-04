@@ -1,6 +1,6 @@
 -- Create the target-CDB private database link to the source CDB.
 --
--- Run from CDB$ROOT in the target CDB after 00-preflight-target.sql.
+-- Run from CDB$ROOT in the target CDB after 02-preflight-target.sql.
 -- The configured target-side user must have CREATE DATABASE LINK. The source
 -- link user must have CREATE SESSION and the privileges validated by this lab.
 
@@ -42,7 +42,7 @@ BEGIN
     IF l_link_count > 0 THEN
         raise_application_error(
             -20036,
-            'Database link &&LAB03_SOURCE_DB_LINK already exists. Verify it or run 08-cleanup-snapshot-target.sql before recreating it.'
+            'Database link &&LAB03_SOURCE_DB_LINK already exists. Verify it or run 11-cleanup-snapshot-target.sql before recreating it.'
         );
     END IF;
 END;

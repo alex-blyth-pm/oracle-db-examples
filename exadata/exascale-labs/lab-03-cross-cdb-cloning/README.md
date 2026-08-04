@@ -15,12 +15,21 @@ flowchart LR
 
 ## Prerequisites
 
+Complete [Prepare Your Environment](../docs/environment-setup.md) before
+configuring the two CDBs for this lab.
+
 - The common prerequisites in [Prerequisites](../docs/prerequisites.md).
 - A source CDB containing an open `SALES_MAIN` PDB.
 - The Lab 03 verification data created by `setup/00-setup.sh`. If `SALES_MAIN`
   was created outside the setup wrapper, run
   `setup/01-create-lab-verification-data.sql` after it is open read-write.
 - A separate, open target CDB that can host `CI_PIPELINE`.
+- The source and target CDBs must use the same Exascale vault. They can be in
+  separate VM clusters when the target database servers can reach the source
+  CDB SCAN service. This lab uses native Exascale snapshot-copy thin cloning;
+  cloning between Exascale vaults is not supported. See [Thin Cloning a
+  Pluggable Database in a Different Container
+  Database](https://docs.oracle.com/en/engineered-systems/exadata-database-machine/exscl/cloning-pdb-into-different-cdb.html).
 - Oracle Net connectivity from every target-CDB database-server VM to the
   source CDB's SCAN service. For complete lab-series readiness, the source-CDB
   database-server VMs must also reach the target CDB's SCAN service.
@@ -73,6 +82,10 @@ environment rather than the illustrative password above. The runner obtains
 `CDB_UNIQUE_NAME` and `RAC_SERVICE_PREFERRED` from the target CDB connection
 before it manages target-CDB Clusterware resources and services.
 
+Network connectivity alone is insufficient for this lab. Confirm that the
+source and target CDBs use the same Exascale vault before running the
+snapshot-copy clone steps. The CDBs may be in separate VM clusters.
+
 The runner validates both CDBs, removes any prior Lab 03 clone state, creates
 the source database-link user and target-side link, then creates and verifies
 both the snapshot-based and direct thin clones. It leaves both target clones
@@ -94,18 +107,18 @@ CDBs beyond the lab execution window.
 |------|---------|
 | `config.sql.example` | Local configuration template for the two CDBs, source database link, snapshot, and target PDB |
 | `00-run-lab.sh` | Resets prior Lab 03 objects, then creates and verifies both cross-CDB clone paths |
-| `00-preflight-source.sql` | Validates the source CDB and `SALES_MAIN` |
-| `00-preflight-target.sql` | Validates the target CDB before link creation |
-| `01-create-source-link-user.sql` | Creates or updates the source-CDB common user and its database-link privileges |
-| `01-create-source-database-link.sql` | Creates and validates the target-side private database link to the source CDB |
-| `02-create-source-snapshot.sql` | Creates the dedicated Lab 03 source snapshot |
-| `03-create-target-clone.sql` | Creates the target thin clone from the source snapshot through the database link |
-| `04-verify-target-clone.sql` | Reports target clone RAC state, services, and storage |
-| `05-create-direct-target-clone.sql` | Creates a direct thin clone from `SALES_MAIN` without using a PDB snapshot |
-| `06-verify-direct-target-clone.sql` | Reports provenance and cloned Lab 03 verification data for the direct thin clone |
-| `07-cleanup-direct-target.sql` | Idempotently drops the direct thin clone |
-| `08-cleanup-snapshot-target.sql` | Idempotently drops the snapshot-based target clone and target-side private database link |
-| `09-cleanup-source.sql` | Idempotently drops the Lab 03 source snapshot |
+| `01-preflight-source.sql` | Validates the source CDB and `SALES_MAIN` |
+| `02-preflight-target.sql` | Validates the target CDB before link creation |
+| `03-create-source-link-user.sql` | Creates or updates the source-CDB common user and its database-link privileges |
+| `04-create-source-database-link.sql` | Creates and validates the target-side private database link to the source CDB |
+| `05-create-source-snapshot.sql` | Creates the dedicated Lab 03 source snapshot |
+| `06-create-target-clone.sql` | Creates the target thin clone from the source snapshot through the database link |
+| `07-verify-target-clone.sql` | Reports target clone RAC state, services, and storage |
+| `08-create-direct-target-clone.sql` | Creates a direct thin clone from `SALES_MAIN` without using a PDB snapshot |
+| `09-verify-direct-target-clone.sql` | Reports provenance and cloned Lab 03 verification data for the direct thin clone |
+| `10-cleanup-direct-target.sql` | Idempotently drops the direct thin clone |
+| `11-cleanup-snapshot-target.sql` | Idempotently drops the snapshot-based target clone and target-side private database link |
+| `12-cleanup-source.sql` | Idempotently drops the Lab 03 source snapshot |
 | `99-reset-target-lab.sh` | Removes target-CDB Clusterware resources and runs the target reset SQL non-interactively |
 | `99-reset-target-lab.sql` | Removes both Lab 03 target PDBs and the target-side private database link |
 | `99-reset-lab.sh` | Resets the target CDB, then removes the Lab 03 source snapshot |
@@ -115,15 +128,15 @@ CDBs beyond the lab execution window.
 Run source-side preparation from `CDB$ROOT` in the source CDB:
 
 ```sql
-@00-preflight-source.sql
-@01-create-source-link-user.sql
+@01-preflight-source.sql
+@03-create-source-link-user.sql
 ```
 
 Run target-side preparation from `CDB$ROOT` in the target CDB:
 
 ```sql
-@00-preflight-target.sql
-@01-create-source-database-link.sql
+@02-preflight-target.sql
+@04-create-source-database-link.sql
 ```
 
 The source-user script creates the common user named by
@@ -142,18 +155,18 @@ when adapting authentication or connect-string behavior.
 Create the source snapshot from `CDB$ROOT` in the source CDB:
 
 ```sql
-@02-create-source-snapshot.sql
+@05-create-source-snapshot.sql
 ```
 
 Create the target thin clone from `SALES_CROSS_CDB_SNAP`:
 
 ```sql
-@03-create-target-clone.sql
+@06-create-target-clone.sql
 ```
 
 The script creates the PDB in `MOUNTED` mode. Start the PDB and its service
 with the shared Clusterware helper, using the target CDB's `DB_UNIQUE_NAME` and
-its RAC instance names. `03-create-target-clone.sql` prints the exact exports
+its RAC instance names. `06-create-target-clone.sql` prints the exact exports
 for the connected target CDB. For example:
 
 ```bash
@@ -164,7 +177,7 @@ export PDB_CLUSTERWARE_PDB_CONFIG=./config.sql
 ```
 
 ```sql
-@04-verify-target-clone.sql
+@07-verify-target-clone.sql
 ```
 
 ## Direct Thin-Clone Flow
@@ -173,14 +186,14 @@ Create a second target PDB directly from the current `SALES_MAIN` state, without
 using `SALES_CROSS_CDB_SNAP`:
 
 ```sql
-@05-create-direct-target-clone.sql
+@08-create-direct-target-clone.sql
 ```
 
 Start the configured `LAB03_DIRECT_TARGET_PDB` with the Clusterware helper,
 then verify it:
 
 ```sql
-@06-verify-direct-target-clone.sql
+@09-verify-direct-target-clone.sql
 ```
 
 After both clone paths have been verified, clean up in dependency order. Run
@@ -188,11 +201,11 @@ the target-CDB scripts first, then remove the source snapshot:
 
 ```sql
 -- Target CDB
-@07-cleanup-direct-target.sql
-@08-cleanup-snapshot-target.sql
+@10-cleanup-direct-target.sql
+@11-cleanup-snapshot-target.sql
 
 -- Source CDB
-@09-cleanup-source.sql
+@12-cleanup-source.sql
 ```
 
 To reset the Lab 03 target CDB non-interactively, including Clusterware PDB
@@ -206,7 +219,7 @@ export LAB03_TARGET_DB_CONNECT='sys/<target-password>@//<target-scan>:1521/<targ
 
 The target reset removes `LAB03_DIRECT_TARGET_PDB`, `LAB03_TARGET_PDB`, and
 the target-side database link. It does not remove the source snapshot; run
-`@09-cleanup-source.sql` from the source CDB when that is also required.
+`@12-cleanup-source.sql` from the source CDB when that is also required.
 
 To reset all Lab 03 objects in dependency order, set both connection variables
 and run:

@@ -45,7 +45,7 @@ BEGIN
 END;
 /
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to display database identity and configuration."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to display database identity and configuration.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 COLUMN database_name FORMAT A18
@@ -124,7 +124,7 @@ SELECT CASE
        END AS status
 FROM   dual;
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to verify PDB configuration and RAC state."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to verify PDB configuration and RAC state.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT Verify PDB configuration
@@ -172,7 +172,7 @@ FROM   (
 GROUP  BY expected_pdb, pdb_name
 ORDER  BY expected_pdb;
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to run shared verification reports."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to run shared verification reports.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 @@../common/verify-pdbs.sql
@@ -193,7 +193,7 @@ PROMPT Verify datafiles
 
 @@../common/verify-datafiles.sql
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to show the environment readiness summary."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to show the environment readiness summary.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT Summary

@@ -54,7 +54,7 @@ BEGIN
 END;
 /
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to create consistent snapshot &&CONSISTENT_SNAPSHOT_NAME."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to create consistent snapshot &&CONSISTENT_SNAPSHOT_NAME.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT SQL/DDL:
@@ -68,7 +68,7 @@ ALTER PLUGGABLE DATABASE SNAPSHOT &&CONSISTENT_SNAPSHOT_NAME CONSISTENT;
 
 ALTER SESSION SET CONTAINER = &&ROOT_CONTAINER;
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to verify consistent snapshot &&CONSISTENT_SNAPSHOT_NAME."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to verify consistent snapshot &&CONSISTENT_SNAPSHOT_NAME.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 @@../common/verify-snapshots.sql

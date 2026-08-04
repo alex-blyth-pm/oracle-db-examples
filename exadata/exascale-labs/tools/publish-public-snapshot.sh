@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Prepare a reviewable public-repository snapshot from an annotated release tag.
-# The script intentionally does not commit, push, or create a pull request.
+# Prepare a reviewable public staging candidate from an annotated internal tag.
+# The script never creates a pull request.
 
 set -euo pipefail
 
@@ -11,20 +11,24 @@ Usage:
   tools/publish-public-snapshot.sh --tag <release-tag> --public-repo <path> [options]
 
 Required arguments:
-  --tag <release-tag>       Annotated tag in this repository, for example v0.3.0.
+  --tag <release-tag>       Annotated tag in this repository, for example v0.3.1.
   --public-repo <path>      Clean local clone of alex-blyth-pm/oracle-db-examples.
 
 Options:
-  --branch <branch>         Public release branch. Defaults to
+  --branch <branch>         Public candidate branch. Defaults to
                             exadata-exascale-labs-<release-tag>.
   --destination <path>      Destination within the public repository. Defaults to
                             exadata/exascale-labs.
+  --commit                  Commit the prepared candidate in the public repository.
+  --push                    Push the committed candidate branch to origin.
   --dry-run                 Validate the source export without changing the public clone.
   --help                    Show this help text.
 
-The script exports the tagged source with docs/blogs excluded, replaces only the
-destination directory, updates publication metadata, and adds the landing-page
-link when it is missing. Review, commit, push, and open the public pull request
+Each candidate is a complete, cumulative snapshot of the tagged internal source.
+The script creates its branch from origin/main in the public repository, exports
+the tagged source with docs/blogs excluded, updates publication metadata, and
+adds the landing-page link when it is missing. Use --commit to create the local
+candidate commit and --push to publish it. Review and open the public pull request
 after the script completes.
 EOF
 }
@@ -38,6 +42,8 @@ release_tag=''
 public_repo=''
 public_branch=''
 destination='exadata/exascale-labs'
+commit_candidate=false
+push_candidate=false
 dry_run=false
 
 while [[ $# -gt 0 ]]; do
@@ -58,6 +64,14 @@ while [[ $# -gt 0 ]]; do
       destination=${2:-}
       shift 2
       ;;
+    --commit)
+      commit_candidate=true
+      shift
+      ;;
+    --push)
+      push_candidate=true
+      shift
+      ;;
     --dry-run)
       dry_run=true
       shift
@@ -75,6 +89,9 @@ done
 
 [[ -n "$release_tag" ]] || fail '--tag is required.'
 [[ -n "$public_repo" ]] || fail '--public-repo is required.'
+if [[ "$push_candidate" == true && "$commit_candidate" == false ]]; then
+  fail '--push requires --commit.'
+fi
 [[ "$destination" == exadata/* && "$destination" != */../* && "$destination" != *'/..' ]] \
   || fail '--destination must be a relative path below exadata/.'
 
@@ -89,6 +106,8 @@ release_version=$(git -C "$source_repo" show "${release_tag}:VERSION" 2>/dev/nul
   || fail "${release_tag} does not contain VERSION."
 
 [[ -n "$release_version" ]] || fail "${release_tag} contains an empty VERSION."
+[[ "$release_tag" == "v${release_version}" ]] \
+  || fail "${release_tag} does not match VERSION ${release_version}."
 [[ -d "$public_repo/.git" ]] || fail '--public-repo must be a local Git clone.'
 
 public_repo=$(cd "$public_repo" && pwd)
@@ -99,9 +118,6 @@ if [[ "$dry_run" == false ]]; then
     fail 'The public repository has uncommitted or untracked files.'
   fi
 
-  if [[ -n $(git -C "$public_repo" status --porcelain --ignored -- "$destination" | grep '^!!' || true) ]]; then
-    fail "The public destination contains ignored files: ${destination}. Remove or relocate them first."
-  fi
 fi
 
 staging_dir=$(mktemp -d "${TMPDIR:-/tmp}/exadata-exascale-export.XXXXXX")
@@ -117,6 +133,18 @@ git -C "$source_repo" archive --format=tar "$release_tag" -- . ':(exclude)docs/b
   || fail 'The public export unexpectedly contains docs/blogs.'
 [[ -f "$staging_dir/README.md" ]] || fail 'The source export does not contain README.md.'
 
+# The public repository ignores dotfiles globally, but the tagged source
+# intentionally includes tracked dotfiles. Permit only ignored destination
+# files that the source export will replace; preserve the guard for local files
+# that are outside the export.
+if [[ "$dry_run" == false ]]; then
+  while IFS= read -r ignored_file; do
+    export_path=${ignored_file#"$destination"/}
+    [[ -e "$staging_dir/$export_path" ]] \
+      || fail "The public destination contains an ignored file outside the source export: ${ignored_file}. Remove or relocate it first."
+  done < <(git -C "$public_repo" ls-files --others --ignored --exclude-standard -- "$destination")
+fi
+
 if [[ "$dry_run" == true ]]; then
   printf 'Validated public export for %s (%s).\n' "$release_tag" "$source_commit"
   printf 'No changes were made to %s.\n' "$public_repo"
@@ -129,7 +157,12 @@ if git -C "$public_repo" show-ref --verify --quiet "refs/heads/${public_branch}"
   fail "Public branch already exists locally: ${public_branch}"
 fi
 
+if git -C "$public_repo" ls-remote --exit-code --heads origin "${public_branch}" >/dev/null 2>&1; then
+  fail "Public branch already exists on origin: ${public_branch}"
+fi
+
 git -C "$public_repo" switch -c "$public_branch" origin/main
+public_base_commit=$(git -C "$public_repo" rev-parse HEAD)
 git -C "$public_repo" rm -r --ignore-unmatch -- "$destination"
 mkdir -p "$public_repo/$destination"
 
@@ -140,11 +173,13 @@ publication_file="$public_repo/$destination/PUBLICATION.md"
 printf '%s\n' \
   '# Publication Metadata' \
   '' \
-  'This directory is a generated public snapshot of the Exadata Exascale Labs repository.' \
+  'This directory is a generated public staging candidate from the Exadata Exascale Labs repository.' \
+  'It is not an official public release until its pull request merges.' \
   '' \
   "- Internal release tag: \`${release_tag}\`" \
   "- Internal source commit: \`${source_commit}\`" \
-  "- Release version: \`${release_version}\`" \
+  "- Candidate version: \`${release_version}\`" \
+  "- Public base commit: \`${public_base_commit}\`" \
   "- Public destination: \`${destination}\`" \
   > "$publication_file"
 
@@ -177,6 +212,32 @@ git -C "$public_repo" diff --check
 [[ ! -e "$public_repo/$destination/docs/blogs" ]] \
   || fail 'The public destination contains docs/blogs after staging.'
 
-printf 'Public release branch prepared: %s\n' "$public_branch"
-printf 'Review changes with: git -C %s status --short\n' "$public_repo"
-printf 'Then commit, push, and open a pull request to main.\n'
+if [[ "$commit_candidate" == true ]]; then
+  # The public repository's global ignore rules also apply within the staged
+  # destination, so force-add the validated source snapshot.
+  git -C "$public_repo" add -f -- "$destination"
+  git -C "$public_repo" add -- exadata/README.md
+  git -C "$public_repo" commit -m "Stage Exadata Exascale Labs ${release_version}"
+fi
+
+if [[ "$push_candidate" == true ]]; then
+  git -C "$public_repo" push -u origin "$public_branch"
+fi
+
+printf 'Public staging candidate prepared: %s\n' "$public_branch"
+printf 'Internal source: %s (%s)\n' "$release_tag" "$source_commit"
+printf 'Public base: origin/main (%s)\n' "$public_base_commit"
+printf 'Review with: git -C %s status --short\n' "$public_repo"
+
+if [[ "$commit_candidate" == true ]]; then
+  if [[ "$push_candidate" == true ]]; then
+    printf 'Candidate branch pushed to origin.\n'
+  else
+    printf 'Push with: git -C %s push -u origin %s\n' "$public_repo" "$public_branch"
+  fi
+else
+  printf 'Commit with: git -C %s add %s exadata/README.md && git -C %s commit -m "Stage Exadata Exascale Labs %s"\n' \
+    "$public_repo" "$destination" "$public_repo" "$release_version"
+fi
+
+printf 'Then open a pull request from %s to main when this candidate is ready.\n' "$public_branch"

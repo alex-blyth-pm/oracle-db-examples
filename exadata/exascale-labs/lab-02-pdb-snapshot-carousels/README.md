@@ -20,6 +20,9 @@ newest snapshot once the carousel has produced one.
 
 ## Prerequisites
 
+Complete [Prepare Your Environment](../docs/environment-setup.md) before
+running setup or this lab.
+
 - Oracle AI Database 26ai
 - Exadata Exascale
 - Exadata System Software 24.1 or later
@@ -49,9 +52,9 @@ Lab 01 does not need to be left in place, but the common setup PDB must exist.
 | `01-enable-snapshot-carousel.sql` | Sets `MAX_PDB_SNAPSHOTS = 48` and enables `SNAPSHOT MODE EVERY 1 HOURS` for `SALES_MAIN` |
 | `02-verify-snapshot-carousel.sql` | Reports carousel mode, interval, maximum snapshots, and current snapshot metadata |
 | `03-capture-post-refresh-snapshot.sql` | Captures a manually named, precise point after an in-place `SALES_MAIN` refresh |
-| `03-create-qa-from-latest-snapshot.sql` | Creates `QA` from the newest available snapshot after one exists |
-| `03-verify-qa.sql` | Verifies QA availability and service placement after Clusterware starts it |
-| `04-cleanup.sql` | Drops `QA` and the named post-refresh snapshot, disables the automated carousel, and reports remaining interval snapshots |
+| `04-create-qa-from-latest-snapshot.sql` | Creates `QA` from the newest available snapshot after one exists |
+| `05-verify-qa.sql` | Verifies QA availability and service placement after Clusterware starts it |
+| `06-cleanup.sql` | Drops `QA` and the named post-refresh snapshot, disables the automated carousel, and reports remaining interval snapshots |
 | `99-reset-lab.sh` | Removes the QA Clusterware resource and runs cleanup non-interactively |
 
 ## Run-Through
@@ -66,7 +69,7 @@ The runner uses Oracle SQLcl when available and SQL*Plus as the fallback. Set
 `LAB_DB_CONNECT` to override the default `/ as sysdba` connection string. It
 first reports the connected CDB, container, and database version, then validates
 that `SALES_MAIN` exists before cleanup or lab execution. It does not run
-`03-create-qa-from-latest-snapshot.sql` because the database may not create the
+`04-create-qa-from-latest-snapshot.sql` because the database may not create the
 first interval snapshot immediately. It uses
 `../common/manage-pdb-clusterware.sh` for PDB resources and services.
 
@@ -84,11 +87,18 @@ Verify carousel mode and snapshot metadata:
 @02-verify-snapshot-carousel.sql
 ```
 
-After the database has created a carousel snapshot, first remove any prior QA
-clone from Clusterware management. This stops its PDB service, closes the PDB
-through its Clusterware resource, and removes both resources so the SQL can
-safely drop and recreate `QA`. The command is idempotent: it reports and skips
-resources that are already absent.
+If the source must be captured immediately after an in-place refresh, rather
+than at the next carousel interval, create a separate manual snapshot:
+
+```sql
+@03-capture-post-refresh-snapshot.sql
+```
+
+After a snapshot is available, first remove any prior QA clone from Clusterware
+management. This stops its PDB service, closes the PDB through its Clusterware
+resource, and removes both resources so the SQL can safely drop and recreate
+`QA`. The command is idempotent: it reports and skips resources that are
+already absent.
 
 ```bash
 ../common/manage-pdb-clusterware.sh stop-and-remove QA
@@ -97,7 +107,7 @@ resources that are already absent.
 Create the QA clone from the newest snapshot:
 
 ```sql
-@03-create-qa-from-latest-snapshot.sql
+@04-create-qa-from-latest-snapshot.sql
 ```
 
 Create and start its Clusterware PDB resource and service:
@@ -109,20 +119,13 @@ Create and start its Clusterware PDB resource and service:
 Verify QA availability, service placement, and snapshot state:
 
 ```sql
-@03-verify-qa.sql
-```
-
-If the source must be captured immediately after an in-place refresh, rather
-than at the next carousel interval, use a separate manual snapshot:
-
-```sql
-@03-capture-post-refresh-snapshot.sql
+@05-verify-qa.sql
 ```
 
 Clean up the lab manually:
 
 ```sql
-@04-cleanup.sql
+@06-cleanup.sql
 ```
 
 Before cleanup, run `../common/manage-pdb-clusterware.sh stop-and-remove QA`.
