@@ -2,8 +2,8 @@ SET ECHO OFF
 
 @@helpers.sql
 
--- Uses CDB_DATA_FILES for size and autoextend metadata.
-PROMPT PDB storage summary
+-- Uses CDB_DATA_FILES for logical size and autoextend metadata only.
+PROMPT PDB logical storage summary
 
 WITH pdbs AS (
     SELECT con_id,
@@ -31,4 +31,5 @@ WHERE  p.pdb_name IS NOT NULL
 GROUP  BY p.pdb_name, d.con_id
 ORDER  BY p.pdb_name;
 
--- TODO: Track Exadata Exascale physical storage metrics in docs/todo.md.
+-- Physical Exadata Exascale sharing metrics are reported separately by the
+-- optional on-premises verify-exascale-storage.sh collector; see docs/todo.md.

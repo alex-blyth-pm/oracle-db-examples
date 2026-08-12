@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Run Lab 02 end-to-end without interactive pauses.
+# Run Lab 01 end-to-end without interactive pauses.
 #
-# The runner first cleans up any existing Lab 02 objects, then enables and
-# verifies the database-managed PDB snapshot carousel. It intentionally leaves
-# the carousel enabled for inspection.
+# The runner first cleans up any existing Lab 01 objects, then runs the lab
+# through the refresh step. It intentionally does not run final cleanup so the
+# resulting snapshot and clone state can be used by a later lab.
 
 set -euo pipefail
 
@@ -15,26 +15,18 @@ sql_connect=${LAB_DB_CONNECT:-"/ as sysdba"}
 sql_client=${LAB_SQL_CLIENT:-auto}
 
 find_sql_client() {
-    is_sqlcl() {
-        "${1}" -version 2>&1 | grep -qi 'SQLcl'
-    }
-
     case "$sql_client" in
         auto)
-            if command -v sql >/dev/null 2>&1 && is_sqlcl "$(command -v sql)"; then
+            if command -v sql >/dev/null 2>&1; then
                 command -v sql
             elif command -v sqlplus >/dev/null 2>&1; then
                 command -v sqlplus
             else
-                echo "ERROR: Oracle SQLcl or SQL*Plus was not found in PATH." >&2
+                echo "ERROR: sqlcl 'sql' or sqlplus was not found in PATH." >&2
                 return 1
             fi
             ;;
         sqlcl|sql)
-            if ! command -v sql >/dev/null 2>&1 || ! is_sqlcl "$(command -v sql)"; then
-                echo "ERROR: LAB_SQL_CLIENT=sql requires Oracle SQLcl; 'sql' is missing or is a different client." >&2
-                return 1
-            fi
             command -v sql
             ;;
         sqlplus)
@@ -48,8 +40,7 @@ find_sql_client() {
 }
 
 sql_bin=$(find_sql_client)
-read -r -a connect_args <<< "$sql_connect"
-workdir=$(mktemp -d "${TMPDIR:-/tmp}/exadata-lab02.XXXXXX")
+workdir=$(mktemp -d "${TMPDIR:-/tmp}/exadata-lab01.XXXXXX")
 
 cleanup() {
     rm -rf "$workdir"
@@ -58,20 +49,20 @@ trap cleanup EXIT
 
 mkdir -p "$workdir"
 cp -R "$repo_root/common" "$workdir/common"
-cp -R "$script_dir" "$workdir/lab-02-pdb-snapshot-carousels"
+cp -R "$script_dir" "$workdir/lab-01-pdb-thin-clones"
 
 sed -i \
     's/DEFINE LAB_PAUSE_SCRIPT      = pause.sql/DEFINE LAB_PAUSE_SCRIPT      = pause-off.sql/' \
     "$workdir/common/config.sql"
 
-preflight_sql="$workdir/lab-02-pdb-snapshot-carousels/.preflight.sql"
+preflight_sql="$workdir/lab-01-pdb-thin-clones/.preflight.sql"
 cat > "$preflight_sql" <<'SQL'
 @@../common/helpers.sql
 @@../common/config.sql
 
 WHENEVER SQLERROR EXIT SQL.SQLCODE
 
-PROMPT Checking Lab 02 prerequisites
+PROMPT Checking Lab 01 prerequisites
 
 DECLARE
     l_container_name VARCHAR2(128);
@@ -97,7 +88,8 @@ BEGIN
     IF l_main_pdbs = 0 THEN
         raise_application_error(
             -20010,
-            '&&MAIN_PDB does not exist. Run setup before Lab 02.'
+            '&&MAIN_PDB does not exist. Run setup/00-create-sales-main.sql, ' ||
+            'setup/01-mask-data.sql, and setup/02-verify-environment.sql before Lab 01.'
         );
     END IF;
 
@@ -106,13 +98,15 @@ END;
 /
 SQL
 
+read -r -a connect_args <<< "$sql_connect"
+
 run_sql() {
     local script_name=$1
 
     echo
     echo "==> ${script_name}"
     (
-        cd "$workdir/lab-02-pdb-snapshot-carousels"
+        cd "$workdir/lab-01-pdb-thin-clones"
         printf '@%s\nEXIT SQL.SQLCODE\n' "$script_name" |
             "$sql_bin" -s "${connect_args[@]}"
     )
@@ -127,22 +121,30 @@ run_clusterware() {
     "$workdir/common/manage-pdb-clusterware.sh" "$command_name" "$pdb_names"
 }
 
-echo "Running Lab 02 without interactive pauses"
+echo "Running Lab 01 without interactive pauses"
 echo "SQL client: $sql_bin"
-if [ -n "${LAB_DB_CONNECT:-}" ]; then
-    echo "Connect: LAB_DB_CONNECT override configured"
-else
-    echo "Connect: local SYSDBA default"
-fi
+echo "Connect: $sql_connect"
 
-run_sql .connectivity.sql
 run_sql .preflight.sql
 run_clusterware ensure-and-start "SALES_MAIN"
-run_clusterware stop-and-remove "QA"
-run_sql 04-cleanup.sql
-run_sql 01-enable-snapshot-carousel.sql
-run_sql 02-verify-snapshot-carousel.sql
-run_clusterware verify "SALES_MAIN"
+run_clusterware stop-and-remove "DEV_JORDAN,DEV_SARAH,DEV_ALEX"
+run_sql 10-cleanup.sql
+run_sql 01-create-snapshot.sql
+run_sql 02-create-consistent-snapshot.sql
+run_sql 03-create-clones.sql
+run_clusterware ensure-and-start "DEV_ALEX,DEV_SARAH"
+run_sql 04-verify-clones.sql
+run_sql 05-verify-independence.sql
+run_clusterware stop-and-remove "DEV_JORDAN"
+run_sql 06-create-clone-of-clone.sql
+run_clusterware ensure-and-start "DEV_JORDAN"
+run_clusterware stop-and-remove "DEV_SARAH"
+run_sql 07-drop-source-clone.sql
+run_clusterware stop-and-remove "DEV_ALEX"
+run_sql 08-refresh-clone.sql
+run_clusterware ensure-and-start "DEV_ALEX"
+run_sql 09-verify-refresh.sql
+run_clusterware verify "DEV_JORDAN,DEV_ALEX"
 
 echo
-echo "Lab 02 complete. Automated snapshot carousel is enabled for inspection."
+echo "Lab 01 complete. Snapshot and clone state is ready for the next lab."

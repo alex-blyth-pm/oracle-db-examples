@@ -29,7 +29,7 @@ BEGIN
 END;
 /
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to switch into &&MAIN_PDB for masking."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to switch into &&MAIN_PDB for masking.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT SQL/DDL:
@@ -43,7 +43,7 @@ ALTER SESSION SET CONTAINER = &&MAIN_PDB;
 
 PROMPT No masking logic has been executed.
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to return to &&ROOT_CONTAINER."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to return to &&ROOT_CONTAINER.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT SQL/DDL:

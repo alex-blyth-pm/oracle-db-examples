@@ -34,7 +34,7 @@ BEGIN
 END;
 /
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to remove &&QA_PDB if it already exists."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to remove &&QA_PDB if it already exists.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT SQL/DDL:
@@ -60,7 +60,7 @@ BEGIN
 END;
 /
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to create &&QA_PDB from &&LATEST_CAROUSEL_SNAPSHOT."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to create &&QA_PDB from &&LATEST_CAROUSEL_SNAPSHOT.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT SQL/DDL:
@@ -76,4 +76,4 @@ CREATE PLUGGABLE DATABASE &&QA_PDB
 
 PROMPT Clusterware lifecycle after this SQL script:
 PROMPT   ../common/manage-pdb-clusterware.sh ensure-and-start &&QA_PDB
-PROMPT Then run 03-verify-qa.sql after the service is online.
+PROMPT Then run 05-verify-qa.sql after the service is online.

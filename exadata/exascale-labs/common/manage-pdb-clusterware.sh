@@ -20,6 +20,7 @@ Commands:
   ensure-and-start  Create missing PDB resources and services, then start both.
   stop-and-remove   Stop and remove services and PDB resources when present.
   verify            Report PDB resource, service, and RAC placement status.
+  summary           Report a compact PDB resource and service status table.
 
 RAC configuration comes from common/config.sql. Set CDB_UNIQUE_NAME to the
 target CDB DB_UNIQUE_NAME before running this utility. With the default AUTO
@@ -27,6 +28,9 @@ placement, also set RAC_SERVICE_PREFERRED to the comma-separated RAC instance
 list. Set PDB_CLUSTERWARE_PDB_CONFIG to a lab-local configuration file when a
 lab defines its own PDB names. Override the srvctl executable with SRVCTL_BIN
 when it is not on PATH.
+
+Set PDB_CLUSTERWARE_DERIVE_SERVICE=YES only for a lab that has already
+validated an explicit PDB list and needs services derived as <PDB>_SVC.
 USAGE
 }
 
@@ -103,6 +107,11 @@ pdb_service_name() {
             return 0
         fi
     done
+
+    if [ "${PDB_CLUSTERWARE_DERIVE_SERVICE:-NO}" = YES ]; then
+        printf '%s_SVC\n' "$pdb_name"
+        return 0
+    fi
 
     echo "ERROR: ${pdb_name} is not a configured workshop PDB in ${config_file}." >&2
     return 1
@@ -240,6 +249,54 @@ verify() {
     fi
 }
 
+summary_status() {
+    local object_type=$1
+    local object_name=$2
+
+    case "$object_type" in
+        pdb)
+            if ! pdb_resource_exists "$object_name"; then
+                printf '%s\n' "NOT CONFIGURED"
+            elif pdb_is_running "$object_name"; then
+                printf '%s\n' "RUNNING"
+            else
+                printf '%s\n' "CONFIGURED"
+            fi
+            ;;
+        service)
+            if ! service_exists "$object_name"; then
+                printf '%s\n' "NOT CONFIGURED"
+            elif service_is_running "$object_name"; then
+                printf '%s\n' "RUNNING"
+            else
+                printf '%s\n' "CONFIGURED"
+            fi
+            ;;
+    esac
+}
+
+summary_header() {
+    printf '%-30s %-34s %-16s %s\n' "PDB" "SERVICE" "PDB_RESOURCE" "SERVICE_STATUS"
+    printf '%-30s %-34s %-16s %s\n' \
+        "------------------------------" \
+        "----------------------------------" \
+        "----------------" \
+        "----------------"
+}
+
+summary() {
+    local pdb_name=$1
+    local service_name
+    local pdb_status
+    local service_status
+
+    service_name=$(pdb_service_name "$pdb_name")
+    pdb_status=$(summary_status pdb "$pdb_name")
+    service_status=$(summary_status service "$service_name")
+    printf '%-30s %-34s %-16s %s\n' \
+        "$pdb_name" "$service_name" "$pdb_status" "$service_status"
+}
+
 if [ "$#" -eq 1 ] && { [ "$1" = -h ] || [ "$1" = --help ]; }; then
     usage
     exit 0
@@ -280,6 +337,10 @@ case "$pdb_placement" in
         ;;
 esac
 
+if [ "$command_name" = summary ]; then
+    summary_header
+fi
+
 for pdb_name in "${pdb_names[@]}"; do
     pdb_name=${pdb_name//[[:space:]]/}
     if [ -z "$pdb_name" ]; then
@@ -291,6 +352,7 @@ for pdb_name in "${pdb_names[@]}"; do
         ensure-and-start) ensure_and_start "$pdb_name" ;;
         stop-and-remove) stop_and_remove "$pdb_name" ;;
         verify) verify "$pdb_name" ;;
+        summary) summary "$pdb_name" ;;
         *)
             usage >&2
             exit 2

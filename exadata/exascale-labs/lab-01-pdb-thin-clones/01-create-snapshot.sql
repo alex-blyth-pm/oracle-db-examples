@@ -53,7 +53,7 @@ BEGIN
 END;
 /
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to create snapshot &&SNAPSHOT_NAME."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to create snapshot &&SNAPSHOT_NAME.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT SQL/DDL:
@@ -67,7 +67,7 @@ ALTER PLUGGABLE DATABASE SNAPSHOT &&SNAPSHOT_NAME;
 
 ALTER SESSION SET CONTAINER = &&ROOT_CONTAINER;
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to verify snapshot &&SNAPSHOT_NAME."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to verify snapshot &&SNAPSHOT_NAME.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 @@../common/verify-snapshots.sql

@@ -50,7 +50,7 @@ BEGIN
 END;
 /
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to create &&MAIN_PDB."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to create &&MAIN_PDB.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT
