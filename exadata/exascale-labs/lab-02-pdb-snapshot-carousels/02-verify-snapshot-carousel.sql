@@ -7,7 +7,7 @@ WHENEVER SQLERROR EXIT SQL.SQLCODE
 
 PROMPT Verifying automated PDB snapshot carousel for &&MAIN_PDB
 
-DEFINE LAB_PAUSE_MESSAGE = 'Press Return to display snapshot carousel mode and interval.'
+DEFINE LAB_PAUSE_MESSAGE = "Press Return to display snapshot carousel mode and interval."
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT SQL/DDL:
@@ -34,7 +34,7 @@ WHERE  property_name = 'MAX_PDB_SNAPSHOTS';
 
 ALTER SESSION SET CONTAINER = &&ROOT_CONTAINER;
 
-DEFINE LAB_PAUSE_MESSAGE = 'Press Return to display snapshots currently created by the database.'
+DEFINE LAB_PAUSE_MESSAGE = "Press Return to display snapshots currently created by the database."
 @@../common/&&LAB_PAUSE_SCRIPT
 
 @@../common/verify-snapshots.sql

@@ -131,7 +131,7 @@ set_target_clusterware_environment() {
 echo "Resetting Lab 03 target-CDB objects"
 echo "SQL client: ${sql_bin}"
 
-run_sql 02-preflight-target.sql
+run_sql 00-preflight-target.sql
 set_target_clusterware_environment
 
 PDB_CLUSTERWARE_PDB_CONFIG="$script_dir/config.sql" \

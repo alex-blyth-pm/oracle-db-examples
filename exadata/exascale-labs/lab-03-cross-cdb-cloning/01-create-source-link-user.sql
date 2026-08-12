@@ -1,6 +1,6 @@
 -- Create or update the source-CDB common user used by the Lab 03 database link.
 --
--- Run from CDB$ROOT in the source CDB after 01-preflight-source.sql.
+-- Run from CDB$ROOT in the source CDB after 00-preflight-source.sql.
 
 @@../common/helpers.sql
 @@../common/config.sql

@@ -1,6 +1,6 @@
 -- Create a direct thin clone from SALES_MAIN in the source CDB.
 --
--- Run from CDB$ROOT in the target CDB after 04-create-source-database-link.sql.
+-- Run from CDB$ROOT in the target CDB after 01-create-source-database-link.sql.
 
 @@../common/helpers.sql
 @@../common/config.sql
@@ -30,14 +30,14 @@ BEGIN
     WHERE pdb_name = UPPER('&&LAB03_DIRECT_TARGET_PDB');
 
     IF l_pdb_count > 0 THEN
-        raise_application_error(-20043, 'Target PDB &&LAB03_DIRECT_TARGET_PDB already exists. Run 10-cleanup-direct-target.sql before recreating it.');
+        raise_application_error(-20043, 'Target PDB &&LAB03_DIRECT_TARGET_PDB already exists. Run 07-cleanup-direct-target.sql before recreating it.');
     END IF;
 
     SELECT COUNT(*) INTO l_link_count FROM user_db_links
     WHERE db_link = UPPER('&&LAB03_SOURCE_DB_LINK');
 
     IF l_link_count = 0 THEN
-        raise_application_error(-20040, 'Database link &&LAB03_SOURCE_DB_LINK does not exist. Run 04-create-source-database-link.sql first.');
+        raise_application_error(-20040, 'Database link &&LAB03_SOURCE_DB_LINK does not exist. Run 01-create-source-database-link.sql first.');
     END IF;
 END;
 /
@@ -59,4 +59,4 @@ PROMPT PASS: Created &&LAB03_DIRECT_TARGET_PDB in MOUNTED mode.
 PROMPT Start it with:
 PROMPT   export PDB_CLUSTERWARE_PDB_CONFIG=./config.sql
 PROMPT   ../common/manage-pdb-clusterware.sh ensure-and-start &&LAB03_DIRECT_TARGET_PDB
-PROMPT Then run @09-verify-direct-target-clone.sql from CDB$ROOT.
+PROMPT Then run @06-verify-direct-target-clone.sql from CDB$ROOT.

@@ -4,9 +4,6 @@ This document describes the environment and assumptions used throughout the Exad
 
 All labs in this repository have been developed and tested against the environment described below.
 
-For an execution-oriented guide, including topology, parameter, capacity,
-network, and Clusterware setup, see [Prepare Your Environment](environment-setup.md).
-
 ## Software Requirements
 
 The labs assume the following software versions.
@@ -19,14 +16,10 @@ The labs assume the following software versions.
 | Architecture | Oracle Multitenant |
 | Cluster | Oracle RAC (2 or more instances) |
 | Client | SQLcl (recommended) or SQL*Plus |
-| CDB thin cloning | gDBClone **5.0.2.2 or later** |
 
 > **Note**
 >
 > Exadata snapshot and cloning capabilities require **Exadata System Software 24.1 or later**. These labs are developed and validated using the software versions listed in the **Tested Environment** section below.
-
-gDBClone is not used by Labs 01-03, which use SQL PDB snapshot and cloning
-operations. Lab 04 uses gDBClone to create a thin clone of a complete CDB.
 
 ## Environment Requirements
 
@@ -37,9 +30,7 @@ The following database and environment configuration is assumed throughout the l
   lab-defined name rather than the source database global name.
 - A regular RMAN backup schedule and archived-log deletion policy for CDBs
   retained longer than the lab execution window. This keeps recovery-area
-  capacity available for normal database operations and remote cloning. The
-  repository includes a simple [backup and FRA cleanup helper](../tools/backup-cdb-and-clean-fra.sh)
-  for lab CDBs that uses RMAN's default disk location, normally the FRA.
+  capacity available for normal database operations and remote cloning.
 - Two separately named CDBs already created and open:
   - A source CDB for the shared setup environment and Labs 01-02.
   - A target CDB reserved for the Lab 03 cross-CDB clone.
@@ -50,10 +41,7 @@ The following database and environment configuration is assumed throughout the l
 - Oracle Net connectivity from the database-server VMs in each CDB to the peer
   CDB's SCAN service. Configure a source-CDB SCAN connect identifier for the
   target-side Lab 03 database link.
-- For the optional Exadata software check: passwordless SSH equivalence from a
-  central database server to each database server as `oracle` and to each
-  storage server as `celladmin` or `root`. The database-server account also
-  needs passwordless `sudo` access to `dbmcli`.
+- Passwordless SSH equivalence from the central database server to each database server as `root`, and to each storage server as `celladmin` or `root`
 
 ## Starting Environment
 
@@ -200,8 +188,7 @@ CELLS_GROUP=/path/to/cell_group \
 
 ## Tested Environment
 
-The labs are developed and validated using the following software and memory
-configuration.
+The labs are developed and validated using the following software versions.
 
 | Component | Version |
 |----------|---------|
@@ -210,8 +197,3 @@ configuration.
 | Exadata System Software | 26.1.0.0.0 |
 | Exadata Storage Server Software | 26.1.0.0.0 |
 | SQLcl | 26.1 |
-| gDBClone | 5.0.2.2 |
-| Linux memory per database-server VM | 64 GB |
-| Kernel huge pages per database-server VM | 12,800 |
-| `SGA_TARGET` / `SGA_MAX_SIZE` | 4G / 4G |
-| `PGA_AGGREGATE_TARGET` / `PGA_AGGREGATE_LIMIT` | 4G / 10G |

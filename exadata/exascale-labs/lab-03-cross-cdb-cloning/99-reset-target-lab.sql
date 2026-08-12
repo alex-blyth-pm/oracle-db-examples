@@ -37,7 +37,7 @@ END;
 
 PROMPT Removing Lab 03 target-CDB objects.
 
-@@10-cleanup-direct-target.sql
-@@11-cleanup-snapshot-target.sql
+@@07-cleanup-direct-target.sql
+@@08-cleanup-snapshot-target.sql
 
 PROMPT Lab 03 target reset complete.

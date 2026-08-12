@@ -13,7 +13,6 @@ This directory contains reusable configuration, formatting, and verification scr
 | `verify-pdb-services.sql` | Displays PDB services on every RAC instance and summarizes service placement |
 | `verify-snapshots.sql` | Displays snapshot-related PDB metadata for the workshop PDBs |
 | `verify-storage.sql` | Summarizes allocated and autoextend storage by PDB |
-| `verify-exascale-storage.sh` | Optionally formats validated on-premises ESCLI physical-storage metrics for the workshop PDBs |
 | `verify-datafiles.sql` | Lists PDB datafiles, tablespaces, sizes, and OMF paths |
 | `disable-snapshot-carousel.sql` | Disables automated snapshot mode for the configured source PDB |
 | `drop-snapshot.sql` | Drops the configured named PDB snapshot from the configured source PDB |
@@ -21,7 +20,6 @@ This directory contains reusable configuration, formatting, and verification scr
 | `skip-snapshot.sql` | Reports that a configured named PDB snapshot was not found |
 | `pause.sql` | Waits for Return during interactive walkthroughs |
 | `pause-off.sql` | Prints pause text without waiting for non-interactive runs |
-| `confirm-cdb-identity.sql` | Reports the connected CDB, DB unique name, DBID, and RAC instances for a reader safety check |
 
 ## Usage
 
@@ -68,7 +66,3 @@ resources.
 - The scripts are written for SQLcl while remaining readable in SQL*Plus.
 - `LAB_PAUSE_SCRIPT` in `config.sql` controls walkthrough pauses. Use `pause.sql` to wait for Return, or `pause-off.sql` to print the pause text without waiting.
 - Demo scripts keep command echo disabled and print the main SQL/DDL for each major step explicitly.
-- `verify-storage.sql` reports database logical allocation. To report physical
-  sharing, changed-block growth, and clone dependency metadata, run
-  `verify-exascale-storage.sh` with an on-premises collector that implements
-  its documented TSV contract. ESCLI is not available on Exadata Cloud.

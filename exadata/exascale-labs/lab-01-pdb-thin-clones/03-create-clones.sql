@@ -26,7 +26,7 @@ BEGIN
 END;
 /
 
-DEFINE LAB_PAUSE_MESSAGE = 'Press Return to create &&DEV_CLONE_1 and &&DEV_CLONE_2.'
+DEFINE LAB_PAUSE_MESSAGE = "Press Return to create &&DEV_CLONE_1 and &&DEV_CLONE_2."
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT SQL/DDL:
@@ -52,4 +52,4 @@ CREATE PLUGGABLE DATABASE &&DEV_CLONE_2
 
 PROMPT Clusterware lifecycle:
 PROMPT   ../common/manage-pdb-clusterware.sh ensure-and-start &&DEV_CLONE_1,&&DEV_CLONE_2
-PROMPT Then run 04-verify-clones.sql after the services are online.
+PROMPT Then run 03-verify-clones.sql after the services are online.

@@ -15,7 +15,7 @@ PROMPT SQL/DDL:
 PROMPT   If &&DEV_CLONE_1 exists:
 PROMPT     DROP PLUGGABLE DATABASE &&DEV_CLONE_1 INCLUDING DATAFILES;
 
-DEFINE LAB_PAUSE_MESSAGE = 'Press Return to close and drop &&DEV_CLONE_1 if it exists.'
+DEFINE LAB_PAUSE_MESSAGE = "Press Return to close and drop &&DEV_CLONE_1 if it exists."
 @@../common/&&LAB_PAUSE_SCRIPT
 
 DECLARE
@@ -45,7 +45,7 @@ BEGIN
 END;
 /
 
-DEFINE LAB_PAUSE_MESSAGE = 'Press Return to recreate &&DEV_CLONE_1 from snapshot &&SNAPSHOT_NAME.'
+DEFINE LAB_PAUSE_MESSAGE = "Press Return to recreate &&DEV_CLONE_1 from snapshot &&SNAPSHOT_NAME."
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT SQL/DDL:
@@ -61,4 +61,4 @@ CREATE PLUGGABLE DATABASE &&DEV_CLONE_1
 
 PROMPT Clusterware lifecycle after this SQL script:
 PROMPT   ../common/manage-pdb-clusterware.sh ensure-and-start &&DEV_CLONE_1
-PROMPT Then run 09-verify-refresh.sql.
+PROMPT Then run 06-verify-refresh.sql.

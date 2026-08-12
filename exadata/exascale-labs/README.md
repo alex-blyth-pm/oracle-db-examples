@@ -8,23 +8,16 @@ This repository accompanies the Exadata Exascale snapshots and clones blog serie
 
 Each lab uses the common setup environment while progressing from PDB thin cloning through operational workflows such as snapshot carousels and cross-CDB cloning.
 
-Start with [Prepare Your Environment](docs/environment-setup.md) to validate
-the database topology, RAC and Clusterware access, Exascale software level,
-storage capacity, and Lab 03 network requirements before running setup.
-
 ## Target Environment
 
-These labs assume the following environment. For the full preparation steps,
-including commands to discover CDB and RAC values, see
-[Prepare Your Environment](docs/environment-setup.md).
+These labs assume the following environment:
 
 - Oracle AI Database 26ai
 - Exadata Exascale
 - Exadata System Software 24.1 or later
 - Oracle RAC (2 or more instances)
 - Oracle Managed Files (OMF)
-- SQLcl (recommended) or SQL\*Plus
-- gDBClone 5.0.2.2 or later for CDB thin-clone labs
+- SQLcl (recommended) or SQL*Plus
 - SYSDBA privileges
 - Two separately named, open CDBs: a source CDB for setup and Labs 01-02, and
   a target CDB reserved for Lab 03 cross-CDB cloning
@@ -43,8 +36,7 @@ CDB. Lab 03 explicitly identifies source- and target-CDB steps.
 ├── common/
 ├── lab-01-pdb-thin-clones/
 ├── lab-02-pdb-snapshot-carousels/
-├── lab-03-cross-cdb-cloning/
-└── lab-04-cdb-thin-clones/
+└── lab-03-cross-cdb-cloning/
 ```
 
 ### docs/
@@ -63,12 +55,11 @@ Reusable helper and verification scripts shared by all labs.
 
 Each lab is self-contained and includes its own README describing objectives, prerequisites, execution steps, expected results, and cleanup.
 
-| Lab    | Topic                  |
-| ------ | ---------------------- |
-| Lab 01 | PDB Thin Clones        |
+| Lab | Topic |
+|------|-------|
+| Lab 01 | PDB Thin Clones |
 | Lab 02 | PDB Snapshot Carousels |
-| Lab 03 | Cross-CDB PDB Cloning  |
-| Lab 04 | Cloning Full CDBs with gDBClone |
+| Lab 03 | Cross-CDB PDB Cloning |
 
 ## Lab Design Principles
 
@@ -88,11 +79,10 @@ These labs are written as production-quality examples rather than minimal demons
 - PDB Thin Clones
 - PDB Snapshot Carousels
 - Cross-CDB PDB Cloning
-- Cloning Full CDBs with gDBClone
 
 ### Phase 2
 
-Additional labs may include operational scenarios.
+Additional labs may include CDB-focused workflows and operational scenarios.
 
 ## Companion Blog Series
 
@@ -100,7 +90,7 @@ This repository accompanies the following blog series:
 
 1. [Why Database Cloning Needed Reimagining](https://blogs.oracle.com/exadata/exadata-exascale-why-database-cloning-needed-reimagining)
 2. [Exascale Snapshots and Clones: Core Concepts](https://blogs.oracle.com/exadata/exascale-snapshots-and-clones-core-concepts)
-3. [PDB Thin Clones: Fast Copies for Development and Test](https://blogs.oracle.com/exadata/exadata-exascale-pdb-thin-clones)
+3. PDB Thin Clones: Fast Copies for Development and Test (upcoming)
 4. PDB Snapshot Carousels (upcoming)
 5. Cloning Between CDBs (upcoming)
 

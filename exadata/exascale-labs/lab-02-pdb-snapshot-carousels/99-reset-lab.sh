@@ -56,7 +56,7 @@ echo "SQL client: ${sql_bin}"
 
 (
     cd "$script_dir"
-    printf '@06-cleanup.sql\nEXIT SQL.SQLCODE\n' |
+    printf '@04-cleanup.sql\nEXIT SQL.SQLCODE\n' |
         "$sql_bin" -s "${connect_args[@]}"
 )
 

@@ -59,7 +59,7 @@ BEGIN
 END;
 /
 
-DEFINE LAB_PAUSE_MESSAGE = 'Press Return to enable the automated snapshot carousel.'
+DEFINE LAB_PAUSE_MESSAGE = "Press Return to enable the automated snapshot carousel."
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT SQL/DDL:
@@ -76,7 +76,7 @@ ALTER PLUGGABLE DATABASE SNAPSHOT MODE EVERY &&CAROUSEL_INTERVAL;
 
 ALTER SESSION SET CONTAINER = &&ROOT_CONTAINER;
 
-DEFINE LAB_PAUSE_MESSAGE = 'Press Return to verify the automated snapshot carousel mode.'
+DEFINE LAB_PAUSE_MESSAGE = "Press Return to verify the automated snapshot carousel mode."
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT SQL/DDL:

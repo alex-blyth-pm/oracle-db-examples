@@ -68,7 +68,7 @@ echo "Resetting Lab 03 objects"
 echo "Removing the Lab 03 source snapshot"
 (
     cd "$script_dir"
-    printf '@12-cleanup-source.sql\nEXIT SQL.SQLCODE\n' |
+    printf '@09-cleanup-source.sql\nEXIT SQL.SQLCODE\n' |
         "$sql_bin" -s "$source_connect"
 )
 
