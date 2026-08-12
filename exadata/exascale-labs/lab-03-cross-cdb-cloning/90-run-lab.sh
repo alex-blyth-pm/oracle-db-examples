@@ -144,23 +144,23 @@ run_clusterware() {
 echo "Running Lab 03 without interactive pauses"
 echo "SQL client: $sql_bin"
 
-run_sql "Source CDB" "$source_connect" 00-preflight-source.sql
-run_sql "Target CDB" "$target_connect" 00-preflight-target.sql
+run_sql "Source CDB" "$source_connect" 01-preflight-source.sql
+run_sql "Target CDB" "$target_connect" 02-preflight-target.sql
 set_target_clusterware_environment
 
 echo
 echo "==> Resetting prior Lab 03 objects"
 "$script_dir/99-reset-lab.sh"
 
-run_sql "Source CDB" "$source_connect" 01-create-source-link-user.sql
-run_sql "Target CDB" "$target_connect" 01-create-source-database-link.sql
-run_sql "Source CDB" "$source_connect" 02-create-source-snapshot.sql
-run_sql "Target CDB" "$target_connect" 03-create-target-clone.sql
+run_sql "Source CDB" "$source_connect" 03-create-source-link-user.sql
+run_sql "Target CDB" "$target_connect" 04-create-source-database-link.sql
+run_sql "Source CDB" "$source_connect" 05-create-source-snapshot.sql
+run_sql "Target CDB" "$target_connect" 06-create-target-clone.sql
 run_clusterware ensure-and-start "$target_pdb"
-run_sql "Target CDB" "$target_connect" 04-verify-target-clone.sql
-run_sql "Target CDB" "$target_connect" 05-create-direct-target-clone.sql
+run_sql "Target CDB" "$target_connect" 07-verify-target-clone.sql
+run_sql "Target CDB" "$target_connect" 08-create-direct-target-clone.sql
 run_clusterware ensure-and-start "$direct_target_pdb"
-run_sql "Target CDB" "$target_connect" 06-verify-direct-target-clone.sql
+run_sql "Target CDB" "$target_connect" 09-verify-direct-target-clone.sql
 run_clusterware verify "${target_pdb},${direct_target_pdb}"
 
 echo

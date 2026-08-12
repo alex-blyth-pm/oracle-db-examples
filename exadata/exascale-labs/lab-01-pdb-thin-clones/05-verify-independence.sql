@@ -27,7 +27,7 @@ BEGIN
 END;
 /
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to write a marker row in &&DEV_CLONE_1."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to write a marker row in &&DEV_CLONE_1.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT SQL/DDL:
@@ -96,7 +96,7 @@ BEGIN
 END;
 /
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to display marker rows in &&DEV_CLONE_1."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to display marker rows in &&DEV_CLONE_1.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT Results from &&DEV_CLONE_1
@@ -107,7 +107,7 @@ SELECT clone_name,
 FROM   &&APP_NAME._ADMIN.lab01_clone_marker
 ORDER  BY created_at;
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to write a marker row in &&DEV_CLONE_2."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to write a marker row in &&DEV_CLONE_2.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT SQL/DDL:
@@ -178,7 +178,7 @@ BEGIN
 END;
 /
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to display marker rows in &&DEV_CLONE_2."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to display marker rows in &&DEV_CLONE_2.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 PROMPT Results from &&DEV_CLONE_2
@@ -194,12 +194,12 @@ PROMPT   ALTER SESSION SET CONTAINER = &&ROOT_CONTAINER;
 
 ALTER SESSION SET CONTAINER = &&ROOT_CONTAINER;
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to verify clone state and storage after local writes."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to verify clone state and storage after local writes.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 @@../common/verify-pdbs.sql
 @@../common/verify-storage.sql
 
--- TODO: Track changed-block space usage metrics in docs/todo.md.
+PROMPT Optional on-premises changed-block check: run ../common/verify-exascale-storage.sh with a validated ESCLI collector.
 
 PROMPT Clone independence verification complete

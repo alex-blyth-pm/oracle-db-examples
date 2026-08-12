@@ -1,6 +1,6 @@
 -- Create the dedicated Lab 03 source snapshot.
 --
--- Run from CDB$ROOT in the source CDB after 00-preflight-source.sql.
+-- Run from CDB$ROOT in the source CDB after 01-preflight-source.sql.
 
 @@../common/helpers.sql
 @@../common/config.sql
@@ -43,7 +43,7 @@ BEGIN
     IF l_snapshot_count > 0 THEN
         raise_application_error(
             -20034,
-            'Snapshot &&LAB03_SNAPSHOT_NAME already exists. Run 09-cleanup-source.sql first.'
+            'Snapshot &&LAB03_SNAPSHOT_NAME already exists. Run 12-cleanup-source.sql first.'
         );
     END IF;
 END;

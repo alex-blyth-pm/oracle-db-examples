@@ -1,6 +1,6 @@
 -- Create the Lab 03 cross-CDB thin clone from the source snapshot.
 --
--- Run from CDB$ROOT in the target CDB after 01-create-source-database-link.sql.
+-- Run from CDB$ROOT in the target CDB after 04-create-source-database-link.sql.
 
 @@../common/helpers.sql
 @@../common/config.sql
@@ -41,7 +41,7 @@ BEGIN
     IF l_pdb_count > 0 THEN
         raise_application_error(
             -20039,
-            'Target PDB &&LAB03_TARGET_PDB already exists. Run 08-cleanup-snapshot-target.sql before recreating it.'
+            'Target PDB &&LAB03_TARGET_PDB already exists. Run 11-cleanup-snapshot-target.sql before recreating it.'
         );
     END IF;
 
@@ -53,7 +53,7 @@ BEGIN
     IF l_link_count = 0 THEN
         raise_application_error(
             -20040,
-            'Database link &&LAB03_SOURCE_DB_LINK does not exist. Run 01-create-source-database-link.sql first.'
+            'Database link &&LAB03_SOURCE_DB_LINK does not exist. Run 04-create-source-database-link.sql first.'
         );
     END IF;
 END;
@@ -88,4 +88,4 @@ FROM   gv$instance;
 PROMPT export PDB_CLUSTERWARE_PDB_CONFIG=./config.sql
 PROMPT Then run:
 PROMPT   ../common/manage-pdb-clusterware.sh ensure-and-start &&LAB03_TARGET_PDB
-PROMPT Then run @04-verify-target-clone.sql from CDB$ROOT in the target CDB.
+PROMPT Then run @07-verify-target-clone.sql from CDB$ROOT in the target CDB.

@@ -48,7 +48,7 @@ PROMPT
 PROMPT Clusterware lifecycle before this SQL script:
 PROMPT   ../common/manage-pdb-clusterware.sh stop-and-remove &&DEV_CLONE_CHILD
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to remove &&DEV_CLONE_CHILD if it already exists."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to remove &&DEV_CLONE_CHILD if it already exists.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 DECLARE
@@ -70,7 +70,7 @@ PROMPT   CREATE PLUGGABLE DATABASE &&DEV_CLONE_CHILD
 PROMPT     FROM &&DEV_CLONE_2
 PROMPT     SNAPSHOT COPY;
 
-DEFINE LAB_PAUSE_MESSAGE = "Press Return to create &&DEV_CLONE_CHILD as a snapshot copy of the open &&DEV_CLONE_2 clone."
+DEFINE LAB_PAUSE_MESSAGE = 'Press Return to create &&DEV_CLONE_CHILD as a snapshot copy of the open &&DEV_CLONE_2 clone.'
 @@../common/&&LAB_PAUSE_SCRIPT
 
 CREATE PLUGGABLE DATABASE &&DEV_CLONE_CHILD
@@ -81,6 +81,6 @@ PROMPT Clusterware lifecycle after this SQL script:
 PROMPT   ../common/manage-pdb-clusterware.sh ensure-and-start &&DEV_CLONE_CHILD
 PROMPT Before dropping &&DEV_CLONE_2, run:
 PROMPT   ../common/manage-pdb-clusterware.sh stop-and-remove &&DEV_CLONE_2
-PROMPT Then run 05-drop-source-clone.sql to remove &&DEV_CLONE_2 and verify the child.
+PROMPT Then run 07-drop-source-clone.sql to remove &&DEV_CLONE_2 and verify the child.
 
 PROMPT Hierarchical clone creation complete

@@ -9,6 +9,9 @@
 WHENEVER SQLERROR EXIT SQL.SQLCODE
 
 PROMPT Checking Lab 03 source prerequisites
+PROMPT Expected source CDB: &&LAB03_SOURCE_CDB
+
+@@../common/confirm-cdb-identity.sql
 
 DECLARE
     l_container_name VARCHAR2(128);
@@ -85,10 +88,25 @@ BEGIN
         ORDER BY inst_id, name
     ) LOOP
         IF TO_NUMBER(r_parameter.value) = 0 THEN
+            IF r_parameter.name = 'open_links' THEN
+                dbms_output.put_line(
+                    'WARNING: Instance ' || r_parameter.inst_id || ' parameter ' ||
+                    'OPEN_LINKS is 0. Configure 4 or higher before creating the ' ||
+                    'cross-CDB database link.'
+                );
+            ELSE
+                dbms_output.put_line(
+                    'WARNING: Instance ' || r_parameter.inst_id || ' parameter ' ||
+                    UPPER(r_parameter.name) || ' is 0. Configure a non-zero value ' ||
+                    'before creating the cross-CDB database link.'
+                );
+            END IF;
+        ELSIF r_parameter.name = 'open_links'
+              AND TO_NUMBER(r_parameter.value) = 1 THEN
             dbms_output.put_line(
                 'WARNING: Instance ' || r_parameter.inst_id || ' parameter ' ||
-                UPPER(r_parameter.name) || ' is 0. Configure a non-zero value ' ||
-                'before creating the cross-CDB database link.'
+                'OPEN_LINKS is 1. It supports this lab, but 4 or higher is ' ||
+                'recommended for additional session capacity.'
             );
         ELSE
             dbms_output.put_line(
